@@ -1,0 +1,160 @@
+networks:
+  app-tier:
+    driver: bridge
+services:
+  consoleserviceapp:
+    build:
+      context: E:\microservices 2022\UserService
+      dockerfile: OrderProcessor/Dockerfile
+      labels:
+        com.microsoft.created-by: visual-studio
+        com.microsoft.visual-studio.project-name: OrderProcessor
+      target: base
+    container_name: OrderProcessor
+    entrypoint: tail -f /dev/null
+    environment:
+      NUGET_FALLBACK_PACKAGES: ''
+    image: orderprocessor:dev
+    labels:
+      com.microsoft.visualstudio.debuggee.arguments: ' --additionalProbingPath /root/.nuget/packages  "/app/bin/Debug/net6.0/OrderProcessor.dll"'
+      com.microsoft.visualstudio.debuggee.killprogram: /bin/sh -c "if PID=$$(pidof
+        dotnet); then kill $$PID; fi"
+      com.microsoft.visualstudio.debuggee.program: dotnet
+      com.microsoft.visualstudio.debuggee.workingdirectory: /app
+    networks:
+      app-tier: {}
+    tty: true
+    volumes:
+    - E:\microservices 2022\UserService\OrderProcessor:/app:rw
+    - C:\Users\Khairul Anwar\vsdbg\vs2017u5:/remote_debugger:rw
+    - C:\Users\Khairul Anwar\.nuget\packages:/root/.nuget/packages:ro
+  kafka:
+    depends_on:
+      zookeeper:
+        condition: service_started
+    environment:
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://127.0.0.1:9092
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092
+      KAFKA_CFG_ZOOKEEPER_CONNECT: zookeeper:2181
+    hostname: kafkaserver.local
+    image: docker.io/bitnami/kafka
+    links:
+    - zookeeper
+    networks:
+      app-tier: {}
+    ports:
+    - published: 9092
+      target: 9092
+    volumes:
+    - E:\microservices 2022\UserService\kafka_data:/bitnami:rw
+  servicea:
+    build:
+      context: E:\microservices 2022\UserService
+      dockerfile: OrderService/Dockerfile
+      labels:
+        com.microsoft.created-by: visual-studio
+        com.microsoft.visual-studio.project-name: OrderService
+      target: base
+    container_name: OrderService
+    entrypoint: tail -f /dev/null
+    environment:
+      ASPNETCORE_LOGGING__CONSOLE__DISABLECOLORS: "true"
+      DOTNET_USE_POLLING_FILE_WATCHER: '1'
+      NUGET_FALLBACK_PACKAGES: ''
+    image: orderservice:dev
+    labels:
+      com.microsoft.visualstudio.debuggee.arguments: ' --additionalProbingPath /root/.nuget/packages  "/app/bin/Debug/net6.0/OrderService.dll"'
+      com.microsoft.visualstudio.debuggee.killprogram: /bin/sh -c "if PID=$$(pidof
+        dotnet); then kill $$PID; fi"
+      com.microsoft.visualstudio.debuggee.program: dotnet
+      com.microsoft.visualstudio.debuggee.workingdirectory: /app
+    networks:
+      app-tier: {}
+    tty: true
+    volumes:
+    - E:\microservices 2022\UserService\OrderService:/app:rw
+    - C:\Users\Khairul Anwar\vsdbg\vs2017u5:/remote_debugger:rw
+    - C:\Users\Khairul Anwar\AppData\Roaming\ASP.NET\Https:/root/.aspnet/https:ro
+    - C:\Users\Khairul Anwar\AppData\Roaming\Microsoft\UserSecrets:/root/.microsoft/usersecrets:ro
+    - C:\Users\Khairul Anwar\.nuget\packages:/root/.nuget/packages:ro
+    - E:\microservices 2022\UserService:/src:rw
+  serviceb:
+    build:
+      context: E:\microservices 2022\UserService
+      dockerfile: ProductService/Dockerfile
+      labels:
+        com.microsoft.created-by: visual-studio
+        com.microsoft.visual-studio.project-name: ProductService
+      target: base
+    container_name: ProductService
+    entrypoint: tail -f /dev/null
+    environment:
+      ASPNETCORE_LOGGING__CONSOLE__DISABLECOLORS: "true"
+      DOTNET_USE_POLLING_FILE_WATCHER: '1'
+      NUGET_FALLBACK_PACKAGES: ''
+    image: productservice:dev
+    labels:
+      com.microsoft.visualstudio.debuggee.arguments: ' --additionalProbingPath /root/.nuget/packages  "/app/bin/Debug/net6.0/ProductService.dll"'
+      com.microsoft.visualstudio.debuggee.killprogram: /bin/sh -c "if PID=$$(pidof
+        dotnet); then kill $$PID; fi"
+      com.microsoft.visualstudio.debuggee.program: dotnet
+      com.microsoft.visualstudio.debuggee.workingdirectory: /app
+    networks:
+      app-tier: {}
+    tty: true
+    volumes:
+    - E:\microservices 2022\UserService\ProductService:/app:rw
+    - C:\Users\Khairul Anwar\vsdbg\vs2017u5:/remote_debugger:rw
+    - C:\Users\Khairul Anwar\AppData\Roaming\ASP.NET\Https:/root/.aspnet/https:ro
+    - C:\Users\Khairul Anwar\AppData\Roaming\Microsoft\UserSecrets:/root/.microsoft/usersecrets:ro
+    - C:\Users\Khairul Anwar\.nuget\packages:/root/.nuget/packages:ro
+    - E:\microservices 2022\UserService:/src:rw
+  servicec:
+    build:
+      context: E:\microservices 2022\UserService
+      dockerfile: UserService/Dockerfile
+      labels:
+        com.microsoft.created-by: visual-studio
+        com.microsoft.visual-studio.project-name: UserService
+      target: base
+    container_name: UserService
+    entrypoint: tail -f /dev/null
+    environment:
+      ASPNETCORE_LOGGING__CONSOLE__DISABLECOLORS: "true"
+      DOTNET_USE_POLLING_FILE_WATCHER: '1'
+      NUGET_FALLBACK_PACKAGES: ''
+    image: userservice:dev
+    labels:
+      com.microsoft.visualstudio.debuggee.arguments: ' --additionalProbingPath /root/.nuget/packages  "/app/bin/Debug/net6.0/UserService.dll"'
+      com.microsoft.visualstudio.debuggee.killprogram: /bin/sh -c "if PID=$$(pidof
+        dotnet); then kill $$PID; fi"
+      com.microsoft.visualstudio.debuggee.program: dotnet
+      com.microsoft.visualstudio.debuggee.workingdirectory: /app
+    networks:
+      app-tier: {}
+    tty: true
+    volumes:
+    - E:\microservices 2022\UserService\UserService:/app:rw
+    - C:\Users\Khairul Anwar\vsdbg\vs2017u5:/remote_debugger:rw
+    - C:\Users\Khairul Anwar\AppData\Roaming\ASP.NET\Https:/root/.aspnet/https:ro
+    - C:\Users\Khairul Anwar\AppData\Roaming\Microsoft\UserSecrets:/root/.microsoft/usersecrets:ro
+    - C:\Users\Khairul Anwar\.nuget\packages:/root/.nuget/packages:ro
+    - E:\microservices 2022\UserService:/src:rw
+  zookeeper:
+    environment:
+      ALLOW_ANONYMOUS_LOGIN: "yes"
+    image: docker.io/bitnami/zookeeper
+    networks:
+      app-tier: {}
+    ports:
+    - published: 2181
+      target: 2181
+    volumes:
+    - E:\microservices 2022\UserService\zookeeper_data:/bitnami:rw
+version: '3.4'
+volumes:
+  kafka_data:
+    driver: local
+  zookeeper_data:
+    driver: local
